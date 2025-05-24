@@ -16,6 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Print secret envs (for debug only)
+        run: |
+          echo "ROLE: $AWS_ROLE_TO_ASSUME"
+          echo "REGION: $AWS_REGION"
+          echo "REGISTRY: $ECR_REGISTRY"
+
       - name: Build and push Dev image
         uses: QRify-platform/github-actions/docker-build-push@main
         with:
