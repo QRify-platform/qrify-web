@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-push-dev:
+  build-and-push-prod:
     runs-on: ubuntu-latest
 
     steps:
