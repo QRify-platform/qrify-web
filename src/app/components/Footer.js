@@ -5,7 +5,6 @@ export default function Footer() {
         backgroundColor: '#f1f5f9',
         padding: '30px',
         textAlign: 'center',
-        marginTop: '60px',
         color: '#64748b',
         fontSize: '0.9rem'
       }}>

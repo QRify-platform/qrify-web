@@ -10,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: 'Inter, sans-serif', backgroundColor: '#f9fafb', color: '#1f2937' }}>
+      <body style={{ fontFamily: 'Inter, sans-serif', color: '#1f2937' }}>
         <Navbar />
         {children}
         <Footer />
