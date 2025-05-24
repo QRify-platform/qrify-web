@@ -1,4 +1,4 @@
-name: Release Dev app
+name: Release Dev App
 
 on:
   push:
@@ -8,21 +8,13 @@ jobs:
   build-and-push-dev:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      AWS_REGION: us-east-1
-      ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
-
     steps:
       - uses: actions/checkout@v3
-
-      - name: Print secret envs (for debug only)
-        run: |
-          echo "ROLE: $AWS_ROLE_TO_ASSUME"
-          echo "REGION: $AWS_REGION"
-          echo "REGISTRY: $ECR_REGISTRY"
 
       - name: Build and push Dev image
         uses: QRify-platform/github-actions/docker-build-push@main
         with:
           image-name: qrify-web-dev
+          aws-role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-east-1
+          ecr-registry: ${{ secrets.AWS_ECR_REGISTRY }}
