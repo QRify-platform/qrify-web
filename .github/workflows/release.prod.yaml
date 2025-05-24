@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build and push Dev image
+      - name: Build and push Prod image
         uses: QRify-platform/github-actions/docker-build-push@main
         with:
           image-name: qrify-web-prod
