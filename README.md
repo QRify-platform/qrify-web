@@ -4,7 +4,7 @@
 
 This frontend is built with **Next.js** and styled to reflect a polished SaaS experience. It connects to a FastAPI-based backend to handle QR code generation and stores images in the cloud.
 
-<img width="1512" alt="Screenshot 2025-05-24 at 4 56 25 PM" src="https://github.com/user-attachments/assets/5e84fa8e-b7f5-4ec1-afe9-da2d27d98c26" />
+<img width="1512" alt="Screenshot 2025-05-25 at 1 31 18 PM" src="https://github.com/user-attachments/assets/65a9950b-0169-4f0a-a33a-ec9e1d9947f9" />
 
 ## 🚀 Features
 
