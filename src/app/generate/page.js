@@ -51,7 +51,6 @@ export default function Generate() {
         style={{
           padding: '14px',
           fontSize: '1rem',
-          borderRadius: '8px',
           border: '1px solid #cbd5e1',
           width: '100%',
         }}
@@ -59,14 +58,16 @@ export default function Generate() {
       <button
         type="submit"
         style={{
-          padding: '14px 28px',
-          fontSize: '1rem',
-          backgroundColor: '#2563eb',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          transition: 'transform 0.2s',
+          marginTop: '20px',
+          padding: "14px 32px",
+          fontSize: "1rem",
+          backgroundColor: "transparent",
+          color: "black",
+          border: "2px solid black",
+          cursor: "pointer",
+          fontWeight: 600,
+          transition: "all 0.3s ease-in-out",
+          boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
         }}
         onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
         onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
@@ -106,10 +107,9 @@ export default function Generate() {
   return (
     <main
       style={{
-        fontFamily: 'Inter, sans-serif',
         padding: '80px 20px',
         backgroundColor: '#f8fafc',
-        minHeight: '100vh',
+        minHeight: '70vh',
         color: '#1f2937',
         textAlign: 'center',
       }}

@@ -10,6 +10,7 @@ export default function Home() {
       <button
         style={{
           padding: "14px 32px",
+
           fontSize: "1rem",
           backgroundColor: "transparent",
           color: "black",
@@ -150,7 +151,6 @@ export default function Home() {
   return (
     <main
       style={{
-        fontFamily: "Inter, sans-serif",
         color: "#1f2937",
         lineHeight: "1.6",
         overflowX: "hidden",
