@@ -20,11 +20,13 @@ This frontend is built with **Next.js** and styled to reflect a polished SaaS ex
 
 ## 🛠 Tech Stack
 
-| Tech             | Description                         |
-|------------------|-------------------------------------|
-| **Next.js**      | React framework for frontend        |
-| **Axios**        | Handles API requests                |
-| **Cloud Storage**| Images fetched from FastAPI backend |
+| Tech              | Description                                          |
+|-------------------|------------------------------------------------------|
+| **Next.js**       | React framework for building SSR/SPAs               |
+| **Axios**         | Handles HTTP requests to the FastAPI backend        |
+| **Cloud Storage** | Fetches QR code images from presigned S3 URLs       |
+| **Prometheus**    | Collects frontend performance & custom metrics       |
+
 
 ---
 
