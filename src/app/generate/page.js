@@ -6,6 +6,7 @@ import axios from "axios";
 export default function Generate() {
   const [url, setUrl] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +60,6 @@ export default function Generate() {
       <button
         type="submit"
         style={{
-          marginTop: "20px",
           padding: "14px 32px",
           fontSize: "1rem",
           backgroundColor: "transparent",
@@ -68,10 +68,11 @@ export default function Generate() {
           cursor: "pointer",
           fontWeight: 600,
           transition: "all 0.3s ease-in-out",
+          transform: hovered ? "scale(1.03)" : "scale(1)",
           boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         Generate
       </button>
@@ -83,7 +84,6 @@ export default function Generate() {
       <div
         style={{
           marginTop: "40px",
-          animation: "fadeIn 0.6s ease-in-out",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -112,17 +112,16 @@ export default function Generate() {
         backgroundColor: "#f8fafc",
         minHeight: "100vh",
         color: "#1f2937",
-        textAlign: "center",
         backgroundImage: 'url("/qr-pattern.webp")',
         backgroundRepeat: "repeat",
         backgroundSize: "300px",
-        backgroundBlendMode: 'overlay',
+        backgroundBlendMode: "overlay",
         opacity: 0.98,
       }}
     >
-      <TitleSection />
-      <QRForm />
-      <QRPreview />
+      {TitleSection()}
+      {QRForm()}
+      {QRPreview()}
     </main>
   );
 }
