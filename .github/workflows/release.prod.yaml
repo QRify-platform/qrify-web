@@ -22,6 +22,7 @@ jobs:
           aws-role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: us-east-2
           ecr-registry: ${{ secrets.AWS_ECR_REGISTRY }}
+          build-args: "--build-arg NEXT_PUBLIC_API_BASE_URL=http://qrify-web-api.dev.svc.cluster.local:8000"
 
       - name: Update image tag in cluster-state
         uses: QRify-platform/github-actions/update-app-tag@main
