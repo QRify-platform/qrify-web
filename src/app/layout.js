@@ -4,10 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-export const metadata = {
-  title: "QRify – Instant QR Code Generator",
-  description: "A clean SaaS app to generate QR codes from URLs.",
-};
+
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
