@@ -54,13 +54,30 @@ function PreviewPanel({
 
   return (
     <section className="relative flex min-h-[28rem] items-center justify-center overflow-hidden bg-soot px-5 py-16 text-bone sm:px-8 lg:min-h-0 lg:px-12">
+      {/* Atmosphere: acid wash + soft grid (same vibe as earlier preview) */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.22]"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 55% at 50% 40%, rgba(0,240,200,0.14), transparent 60%), radial-gradient(ellipse 45% 40% at 85% 85%, rgba(0,240,200,0.08), transparent 55%), radial-gradient(ellipse 40% 35% at 10% 20%, rgba(0,240,200,0.06), transparent 50%)',
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(243,244,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(243,244,246,0.04) 1px, transparent 1px)',
-          backgroundSize: '36px 36px',
+            'linear-gradient(rgba(0,240,200,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,200,0.07) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
         }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-20 top-1/4 h-72 w-72 rounded-full bg-acid/20 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-acid/12 blur-3xl"
         aria-hidden
       />
 
