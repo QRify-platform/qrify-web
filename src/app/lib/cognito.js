@@ -98,7 +98,7 @@ export async function beginLogin() {
     code_challenge_method: 'S256',
   });
 
-  window.location.assign = `https://${config.domain}/oauth2/authorize?${params}`;
+  window.location.href = `https://${config.domain}/oauth2/authorize?${params}`;
 }
 
 export async function beginLogout() {
