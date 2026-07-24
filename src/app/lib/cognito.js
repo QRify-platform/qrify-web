@@ -58,24 +58,28 @@ function userPoolFromConfig(config) {
   });
 }
 
+function storeProfileFromClaims(claims) {
+  sessionStorage.setItem(
+    STORAGE.profile,
+    JSON.stringify({
+      sub: claims.sub,
+      email: claims.email,
+      name: claims.name || claims.email,
+    })
+  );
+}
+
 function storeSessionFromCognito(session) {
   const access = session.getAccessToken().getJwtToken();
   const id = session.getIdToken().getJwtToken();
   const refresh = session.getRefreshToken().getToken();
   sessionStorage.setItem(STORAGE.access, access);
   sessionStorage.setItem(STORAGE.id, id);
+  // Refresh token kept for a future silent renew; not used yet.
   if (refresh) sessionStorage.setItem(STORAGE.refresh, refresh);
 
   try {
-    const payload = session.getIdToken().decodePayload();
-    sessionStorage.setItem(
-      STORAGE.profile,
-      JSON.stringify({
-        sub: payload.sub,
-        email: payload.email,
-        name: payload.name || payload.email,
-      })
-    );
+    storeProfileFromClaims(session.getIdToken().decodePayload());
   } catch {
     /* ignore */
   }
@@ -93,15 +97,7 @@ function storeSessionFromOauthTokens(tokens) {
     const padded =
       part.replace(/-/g, '+').replace(/_/g, '/') +
       '=='.slice((part.length % 4) || 4);
-    const payload = JSON.parse(atob(padded));
-    sessionStorage.setItem(
-      STORAGE.profile,
-      JSON.stringify({
-        sub: payload.sub,
-        email: payload.email,
-        name: payload.name || payload.email,
-      })
-    );
+    storeProfileFromClaims(JSON.parse(atob(padded)));
   } catch {
     /* ignore */
   }

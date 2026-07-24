@@ -108,7 +108,7 @@ export default function Navbar() {
             ) : (
               <button
                 type="button"
-                onClick={() => beginLogin()}
+                onClick={() => beginLogin(pathname || '/')}
                 className="hidden border border-bone/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-bone/80 transition-colors hover:border-acid hover:text-acid sm:inline-flex"
               >
                 Sign in
@@ -196,7 +196,7 @@ export default function Navbar() {
               type="button"
               onClick={() => {
                 setOpen(false);
-                beginLogin();
+                beginLogin(pathname || '/');
               }}
               className="mt-2 px-4 py-3.5 text-left font-mono text-xs uppercase tracking-[0.16em] text-acid"
             >

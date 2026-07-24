@@ -1,13 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import Link from 'next/link';
-import { beginLogin, getApiToken, isLoggedIn } from '../lib/cognito';
-
-function apiBase() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-}
+import { beginLogin, isLoggedIn } from '../lib/cognito';
+import { deleteQrCode, listMyQrCodes } from '../lib/api';
 
 export default function MyCodesPage() {
   const [ready, setReady] = useState(false);
@@ -29,10 +25,8 @@ export default function MyCodesPage() {
       setLoading(true);
       setError('');
       try {
-        const res = await axios.get(`${apiBase()}/qr-codes`, {
-          headers: { Authorization: `Bearer ${getApiToken()}` },
-        });
-        if (!cancelled) setItems(res.data);
+        const data = await listMyQrCodes();
+        if (!cancelled) setItems(data);
       } catch (err) {
         console.error(err);
         if (!cancelled) {
@@ -53,9 +47,7 @@ export default function MyCodesPage() {
     setDeletingId(id);
     setError('');
     try {
-      await axios.delete(`${apiBase()}/qr-codes/${id}`, {
-        headers: { Authorization: `Bearer ${getApiToken()}` },
-      });
+      await deleteQrCode(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error(err);
@@ -64,6 +56,8 @@ export default function MyCodesPage() {
         setAuthed(false);
       } else if (err.response?.status === 403) {
         setError('You can only delete your own codes.');
+      } else if (err.response?.status === 429) {
+        setError('Too many requests — wait a moment and try again.');
       } else {
         setError('Could not delete that code. Try again.');
       }
@@ -92,7 +86,7 @@ export default function MyCodesPage() {
           </p>
           <button
             type="button"
-            onClick={() => beginLogin()}
+            onClick={() => beginLogin('/my-codes')}
             className="mt-8 inline-flex border border-acid bg-acid px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-soot"
           >
             Sign in
