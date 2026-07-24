@@ -41,85 +41,93 @@ function Field({ id, label, children }) {
   );
 }
 
-function PreviewPanel({ type, qrCodeUrl, loading }) {
+function PreviewPanel({
+  type,
+  qrCodeUrl,
+  loading,
+  saved,
+  saving,
+  onSave,
+  authed,
+}) {
   const typeLabel = QR_TYPES.find((t) => t.id === type)?.label || type;
 
   return (
     <section className="relative flex min-h-[28rem] items-center justify-center overflow-hidden bg-soot px-5 py-16 text-bone sm:px-8 lg:min-h-0 lg:px-12">
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.28]"
+        className="pointer-events-none absolute inset-0 opacity-[0.22]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,240,200,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,200,0.05) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
+            'linear-gradient(rgba(243,244,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(243,244,246,0.04) 1px, transparent 1px)',
+          backgroundSize: '36px 36px',
         }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-acid/[0.07] blur-3xl"
         aria-hidden
       />
 
       {loading ? (
         <div className="relative z-10 flex w-full max-w-sm flex-col items-center text-center animate-rise">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/45">
             Rendering · {typeLabel}
           </p>
-          <div className="mt-8 flex aspect-square w-[min(100%,18rem)] items-center justify-center bg-bone/5 sm:w-72">
-            <div className="h-12 w-12 animate-pulse border border-acid/40 bg-acid/10" />
+          <div className="mt-8 aspect-square w-[min(100%,17rem)] border border-bone/10 bg-slate sm:w-72">
+            <div className="flex h-full items-center justify-center">
+              <div className="h-10 w-10 animate-pulse bg-bone/10" />
+            </div>
           </div>
-          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/45">
-            Building your code
-          </p>
         </div>
       ) : qrCodeUrl ? (
         <div className="relative z-10 flex w-full max-w-md flex-col items-center animate-rise">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid/80">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/45">
             {typeLabel}
           </p>
 
-          <div className="mt-6 w-full max-w-[20rem] bg-bone p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)] sm:max-w-[22rem] sm:p-5">
-            <div className="bg-white p-3 sm:p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={qrCodeUrl}
-                alt="Generated QR code"
-                width={512}
-                height={512}
-                className="aspect-square h-auto w-full"
-                style={{ imageRendering: 'pixelated' }}
-              />
-            </div>
-            <div className="mt-3 flex items-center justify-between gap-3 px-0.5">
-              <span className="font-display text-sm font-bold tracking-tight text-soot">
-                QRify
-              </span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-steel">
-                PNG · ready
-              </span>
-            </div>
+          {/* Single surface: slate frame, QR quiet-zone is the only white */}
+          <div className="mt-6 border border-bone/10 bg-slate p-3 sm:p-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrCodeUrl}
+              alt="Generated QR code"
+              width={512}
+              height={512}
+              className="aspect-square h-auto w-[min(100%,17rem)] sm:w-72"
+              style={{ imageRendering: 'pixelated' }}
+            />
           </div>
 
-          <a
-            href={qrCodeUrl}
-            download="qrify-code.png"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-3 border border-acid bg-acid px-7 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-soot transition-colors hover:bg-transparent hover:text-acid"
-          >
-            Download PNG
-            <span className="h-1.5 w-1.5 bg-soot" aria-hidden />
-          </a>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-bone/40">
-            Saved to My codes
-          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={qrCodeUrl}
+              download="qrify-code.png"
+              className="inline-flex items-center gap-3 border border-acid bg-acid px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-soot transition-colors hover:bg-transparent hover:text-acid"
+            >
+              Download PNG
+            </a>
+            {saved ? (
+              <span className="inline-flex items-center border border-bone/15 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
+                Saved
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={saving}
+                className="inline-flex items-center gap-3 border border-bone/25 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-bone transition-colors hover:border-acid hover:text-acid disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving
+                  ? 'Saving…'
+                  : authed
+                    ? 'Save to My codes'
+                    : 'Sign in to save'}
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="relative z-10 w-full max-w-xs text-center">
-          <div className="mx-auto flex aspect-square w-48 items-center justify-center border border-dashed border-bone/15 bg-slate/50">
-            <QRMark className="aspect-square w-28 opacity-45" bg="#151820" fg="#00f0c8" />
+          <div className="mx-auto flex aspect-square w-48 items-center justify-center border border-dashed border-bone/15 bg-slate">
+            <QRMark className="aspect-square w-28 opacity-40" bg="#151820" fg="#5c6370" />
           </div>
-          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/35">
             Preview appears here
           </p>
         </div>
@@ -140,7 +148,10 @@ function GenerateForm() {
     requestedType === 'wifi' ? { encryption: 'WPA' } : {}
   );
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [payload, setPayload] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [authed, setAuthed] = useState(false);
 
@@ -152,6 +163,8 @@ function GenerateForm() {
     if (requestedType && isValidType(requestedType) && requestedType !== type) {
       setType(requestedType);
       setQrCodeUrl('');
+      setPayload('');
+      setSaved(false);
       setError('');
       setFields(requestedType === 'wifi' ? { encryption: 'WPA' } : {});
     }
@@ -164,51 +177,76 @@ function GenerateForm() {
   const selectType = (next) => {
     setType(next);
     setQrCodeUrl('');
+    setPayload('');
+    setSaved(false);
     setError('');
     setFields(next === 'wifi' ? { encryption: 'WPA' } : {});
     router.replace(`/generate?type=${next}`, { scroll: false });
   };
 
+  const apiBase = () =>
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (!isLoggedIn()) {
-      setError('Sign in to generate and save QR codes.');
-      return;
-    }
+    setSaved(false);
 
     if (!isPayloadReady(type, fields)) {
       setError('Fill in the required fields, then try again.');
       return;
     }
 
-    const payload = buildQrPayload(type, fields);
+    const nextPayload = buildQrPayload(type, fields);
     setLoading(true);
     startNavProgress();
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const res = await axios.post(
-        `${baseUrl}/generate-qr/?url=${encodeURIComponent(payload)}`,
-        null,
-        {
-          headers: { Authorization: `Bearer ${getApiToken()}` },
-        }
+        `${apiBase()}/generate-qr/?url=${encodeURIComponent(nextPayload)}`
       );
       setQrCodeUrl(res.data.qr_code_url);
-      setAuthed(true);
+      setPayload(nextPayload);
+      setAuthed(isLoggedIn());
     } catch (err) {
       console.error('QR code generation error:', err);
-      if (err.response?.status === 401) {
-        setError('Session expired. Sign in again.');
-        setAuthed(false);
-      } else {
-        setError('Could not generate that code. Check your inputs and try again.');
-      }
+      setError('Could not generate that code. Check your inputs and try again.');
       setQrCodeUrl('');
+      setPayload('');
     } finally {
       setLoading(false);
+      doneNavProgress();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!payload || !qrCodeUrl) return;
+
+    if (!isLoggedIn()) {
+      beginLogin();
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    startNavProgress();
+    try {
+      await axios.post(
+        `${apiBase()}/qr-codes`,
+        { url: payload },
+        { headers: { Authorization: `Bearer ${getApiToken()}` } }
+      );
+      setSaved(true);
+      setAuthed(true);
+    } catch (err) {
+      console.error('Save error:', err);
+      if (err.response?.status === 401) {
+        setError('Session expired. Sign in again to save.');
+        setAuthed(false);
+      } else {
+        setError('Could not save that code. Try again.');
+      }
+    } finally {
+      setSaving(false);
       doneNavProgress();
     }
   };
@@ -223,18 +261,18 @@ function GenerateForm() {
             code do?
           </h1>
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-steel">
-            Choose a type, fill the fields, download the PNG.
+            Choose a type, generate a PNG, save only if you want.
           </p>
 
           {!authed && (
-            <div className="mt-6 flex flex-wrap items-center gap-3 border border-soot/15 bg-bone px-4 py-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3 border border-soot/15 px-4 py-3">
               <p className="text-sm text-steel">
-                Sign in to generate and keep your codes.
+                Generate freely — sign in only if you want to save to My codes.
               </p>
               <button
                 type="button"
                 onClick={() => beginLogin()}
-                className="border border-acid bg-acid px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-soot"
+                className="border border-soot/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-soot hover:border-acid hover:text-acid"
               >
                 Sign in
               </button>
@@ -523,7 +561,15 @@ function GenerateForm() {
           </form>
         </section>
 
-        <PreviewPanel type={type} qrCodeUrl={qrCodeUrl} loading={loading} />
+        <PreviewPanel
+          type={type}
+          qrCodeUrl={qrCodeUrl}
+          loading={loading}
+          saved={saved}
+          saving={saving}
+          onSave={handleSave}
+          authed={authed}
+        />
       </div>
     </main>
   );

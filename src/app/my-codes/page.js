@@ -102,7 +102,7 @@ export default function MyCodesPage() {
         )}
         {!loading && !error && items.length === 0 && (
           <p className="mt-10 font-mono text-sm text-steel">
-            No codes yet. Generate one to see it here.
+            No codes yet. Generate one, then use Save to My codes.
           </p>
         )}
 
