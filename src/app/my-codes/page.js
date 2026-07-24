@@ -5,12 +5,17 @@ import axios from 'axios';
 import Link from 'next/link';
 import { beginLogin, getApiToken, isLoggedIn } from '../lib/cognito';
 
+function apiBase() {
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+}
+
 export default function MyCodesPage() {
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState('');
 
   useEffect(() => {
     setAuthed(isLoggedIn());
@@ -24,9 +29,7 @@ export default function MyCodesPage() {
       setLoading(true);
       setError('');
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-        const res = await axios.get(`${baseUrl}/qr-codes`, {
+        const res = await axios.get(`${apiBase()}/qr-codes`, {
           headers: { Authorization: `Bearer ${getApiToken()}` },
         });
         if (!cancelled) setItems(res.data);
@@ -44,6 +47,31 @@ export default function MyCodesPage() {
     };
   }, [ready, authed]);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this saved code?')) return;
+
+    setDeletingId(id);
+    setError('');
+    try {
+      await axios.delete(`${apiBase()}/qr-codes/${id}`, {
+        headers: { Authorization: `Bearer ${getApiToken()}` },
+      });
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        setError('Session expired. Sign in again.');
+        setAuthed(false);
+      } else if (err.response?.status === 403) {
+        setError('You can only delete your own codes.');
+      } else {
+        setError('Could not delete that code. Try again.');
+      }
+    } finally {
+      setDeletingId('');
+    }
+  };
+
   if (!ready) {
     return (
       <main className="flex min-h-[calc(100svh-4.25rem)] items-center justify-center bg-bone">
@@ -60,7 +88,7 @@ export default function MyCodesPage() {
             Your codes
           </h1>
           <p className="mt-4 text-steel">
-            Sign in to see QR codes saved to your account.
+            Sign in to see QR codes you saved to your account.
           </p>
           <button
             type="button"
@@ -82,7 +110,9 @@ export default function MyCodesPage() {
             <h1 className="font-display text-4xl font-bold tracking-[-0.03em] text-soot">
               Your codes
             </h1>
-            <p className="mt-2 text-steel">Saved to your Cognito account.</p>
+            <p className="mt-2 text-steel">
+              Only codes you chose to save show up here.
+            </p>
           </div>
           <Link
             href="/generate"
@@ -102,7 +132,7 @@ export default function MyCodesPage() {
         )}
         {!loading && !error && items.length === 0 && (
           <p className="mt-10 font-mono text-sm text-steel">
-            No codes yet. Generate one, then use Save to My codes.
+            No saved codes yet. Generate one, then tap Save to My codes.
           </p>
         )}
 
@@ -120,14 +150,24 @@ export default function MyCodesPage() {
                   {item.source_url}
                 </p>
               </div>
-              <a
-                href={item.download_url || item.qr_code_url}
-                target="_blank"
-                rel="noreferrer"
-                className="shrink-0 border border-soot/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-soot hover:border-acid hover:text-acid"
-              >
-                Download
-              </a>
+              <div className="flex shrink-0 gap-2">
+                <a
+                  href={item.download_url || item.qr_code_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="border border-soot/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-soot hover:border-acid hover:text-acid"
+                >
+                  Download
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(item.id)}
+                  disabled={deletingId === item.id}
+                  className="border border-soot/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-soot hover:border-red-700 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deletingId === item.id ? 'Deleting…' : 'Delete'}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
