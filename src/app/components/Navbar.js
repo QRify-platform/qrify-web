@@ -3,20 +3,35 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import {
+  beginLogin,
+  beginLogout,
+  getProfile,
+  isLoggedIn,
+} from '../lib/cognito';
 
 const links = [
   { href: '/#how', label: 'How it works' },
   { href: '/#uses', label: 'Use cases' },
   { href: '/generate', label: 'Generate' },
+  { href: '/my-codes', label: 'My codes' },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const [profile, setProfile] = useState(null);
   const onGenerate = pathname === '/generate';
+  const onMyCodes = pathname === '/my-codes';
 
   useEffect(() => {
     setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    setAuthed(isLoggedIn());
+    setProfile(getProfile());
   }, [pathname]);
 
   useEffect(() => {
@@ -47,7 +62,9 @@ export default function Navbar() {
         <nav className="hidden items-center md:flex">
           <div className="flex items-center rounded-sm border border-bone/10 bg-slate/80 p-1">
             {links.map((link, i) => {
-              const active = link.href === '/generate' && onGenerate;
+              const active =
+                (link.href === '/generate' && onGenerate) ||
+                (link.href === '/my-codes' && onMyCodes);
               return (
                 <div key={link.href} className="flex items-center">
                   {i > 0 && (
@@ -73,6 +90,29 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {authed ? (
+            <>
+              <span className="hidden max-w-[10rem] truncate font-mono text-[10px] uppercase tracking-[0.12em] text-bone/50 sm:inline">
+                {profile?.email || 'Signed in'}
+              </span>
+              <button
+                type="button"
+                onClick={() => beginLogout()}
+                className="hidden border border-bone/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-bone/80 transition-colors hover:border-bone/40 hover:text-bone sm:inline-flex"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => beginLogin()}
+              className="hidden border border-bone/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-bone/80 transition-colors hover:border-acid hover:text-acid sm:inline-flex"
+            >
+              Sign in
+            </button>
+          )}
+
           <Link
             href="/generate"
             className="hidden items-center gap-2 border border-acid bg-acid px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-soot transition-colors hover:bg-transparent hover:text-acid sm:inline-flex"
@@ -118,7 +158,9 @@ export default function Navbar() {
       >
         <nav className="mx-auto flex max-w-[1400px] flex-col gap-1 px-5 py-5 sm:px-8">
           {links.map((link) => {
-            const active = link.href === '/generate' && onGenerate;
+            const active =
+              (link.href === '/generate' && onGenerate) ||
+              (link.href === '/my-codes' && onMyCodes);
             return (
               <Link
                 key={link.href}
@@ -134,6 +176,29 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {authed ? (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                beginLogout();
+              }}
+              className="mt-2 px-4 py-3.5 text-left font-mono text-xs uppercase tracking-[0.16em] text-bone/70"
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                beginLogin();
+              }}
+              className="mt-2 px-4 py-3.5 text-left font-mono text-xs uppercase tracking-[0.16em] text-acid"
+            >
+              Sign in
+            </button>
+          )}
           <Link
             href="/generate"
             onClick={() => setOpen(false)}

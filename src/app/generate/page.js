@@ -10,6 +10,11 @@ import {
   isPayloadReady,
 } from '../lib/qrPayload';
 import { TYPE_ICONS } from '../components/TypeIcons';
+import {
+  beginLogin,
+  getApiToken,
+  isLoggedIn,
+} from '../lib/cognito';
 
 const fieldClass =
   'mt-2 w-full border border-soot/15 bg-bone px-4 py-3 font-mono text-sm text-soot outline-none transition-colors placeholder:text-steel/40 focus:border-acid';
@@ -46,6 +51,11 @@ function GenerateForm() {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    setAuthed(isLoggedIn());
+  }, []);
 
   useEffect(() => {
     if (requestedType && isValidType(requestedType) && requestedType !== type) {
@@ -72,6 +82,11 @@ function GenerateForm() {
     e.preventDefault();
     setError('');
 
+    if (!isLoggedIn()) {
+      setError('Sign in to generate and save QR codes.');
+      return;
+    }
+
     if (!isPayloadReady(type, fields)) {
       setError('Fill in the required fields, then try again.');
       return;
@@ -83,12 +98,22 @@ function GenerateForm() {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const res = await axios.post(
-        `${baseUrl}/generate-qr/?url=${encodeURIComponent(payload)}`
+        `${baseUrl}/generate-qr/?url=${encodeURIComponent(payload)}`,
+        null,
+        {
+          headers: { Authorization: `Bearer ${getApiToken()}` },
+        }
       );
       setQrCodeUrl(res.data.qr_code_url);
+      setAuthed(true);
     } catch (err) {
       console.error('QR code generation error:', err);
-      setError('Could not generate that code. Check your inputs and try again.');
+      if (err.response?.status === 401) {
+        setError('Session expired. Sign in again.');
+        setAuthed(false);
+      } else {
+        setError('Could not generate that code. Check your inputs and try again.');
+      }
       setQrCodeUrl('');
     } finally {
       setLoading(false);
@@ -107,6 +132,21 @@ function GenerateForm() {
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-steel">
             Choose a type, fill the fields, download the PNG.
           </p>
+
+          {!authed && (
+            <div className="mt-6 flex flex-wrap items-center gap-3 border border-soot/15 bg-bone px-4 py-3">
+              <p className="text-sm text-steel">
+                Sign in to generate and keep your codes.
+              </p>
+              <button
+                type="button"
+                onClick={() => beginLogin()}
+                className="border border-acid bg-acid px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-soot"
+              >
+                Sign in
+              </button>
+            </div>
+          )}
 
           <div
             role="tablist"
