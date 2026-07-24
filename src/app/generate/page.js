@@ -15,6 +15,10 @@ import {
   getApiToken,
   isLoggedIn,
 } from '../lib/cognito';
+import {
+  doneNavProgress,
+  startNavProgress,
+} from '../components/NavigationProgress';
 
 const fieldClass =
   'mt-2 w-full border border-soot/15 bg-bone px-4 py-3 font-mono text-sm text-soot outline-none transition-colors placeholder:text-steel/40 focus:border-acid';
@@ -34,6 +38,113 @@ function Field({ id, label, children }) {
       </label>
       {children}
     </div>
+  );
+}
+
+function PreviewPanel({ type, qrCodeUrl, loading }) {
+  const typeLabel = QR_TYPES.find((t) => t.id === type)?.label || type;
+
+  return (
+    <section className="relative flex min-h-[28rem] items-center justify-center overflow-hidden bg-soot px-5 py-16 text-bone sm:px-8 lg:min-h-0 lg:px-12">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(0,240,200,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,200,0.06) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-24 top-1/4 h-72 w-72 rounded-full bg-acid/15 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-acid/10 blur-3xl"
+        aria-hidden
+      />
+
+      {loading ? (
+        <div className="relative z-10 flex w-full max-w-sm flex-col items-center text-center animate-rise">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid">
+            Rendering · {typeLabel}
+          </p>
+          <div className="mt-8 flex h-64 w-64 items-center justify-center border border-acid/25 bg-slate/80 sm:h-72 sm:w-72">
+            <div className="relative h-16 w-16">
+              <span className="absolute inset-0 border border-acid/30" />
+              <span className="absolute inset-2 animate-pulse bg-acid/20" />
+              <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-acid" />
+              <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-acid" />
+              <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-acid" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-acid" />
+            </div>
+          </div>
+          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/45">
+            Building your code
+          </p>
+        </div>
+      ) : qrCodeUrl ? (
+        <div className="relative z-10 w-full max-w-md animate-rise text-center">
+          <div className="flex items-center justify-center gap-3">
+            <span className="h-px w-8 bg-acid/50" aria-hidden />
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid">
+              Ready · {typeLabel}
+            </p>
+            <span className="h-px w-8 bg-acid/50" aria-hidden />
+          </div>
+
+          <div className="relative mx-auto mt-8 w-fit">
+            <span
+              className="absolute -left-2 -top-2 h-5 w-5 border-l border-t border-acid"
+              aria-hidden
+            />
+            <span
+              className="absolute -right-2 -top-2 h-5 w-5 border-r border-t border-acid"
+              aria-hidden
+            />
+            <span
+              className="absolute -bottom-2 -left-2 h-5 w-5 border-b border-l border-acid"
+              aria-hidden
+            />
+            <span
+              className="absolute -bottom-2 -right-2 h-5 w-5 border-b border-r border-acid"
+              aria-hidden
+            />
+            <div className="bg-bone p-5 shadow-[0_0_0_1px_rgba(0,240,200,0.2),0_24px_60px_rgba(0,0,0,0.45)] sm:p-7">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrCodeUrl}
+                alt="Generated QR code"
+                className="mx-auto h-56 w-56 object-contain sm:h-72 sm:w-72"
+              />
+            </div>
+          </div>
+
+          <a
+            href={qrCodeUrl}
+            download="qrify-code.png"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 inline-flex items-center gap-3 border border-acid bg-acid px-7 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-soot transition-colors hover:bg-transparent hover:text-acid"
+          >
+            Download PNG
+            <span className="h-1.5 w-1.5 bg-soot" aria-hidden />
+          </a>
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-bone/40">
+            Saved to My codes
+          </p>
+        </div>
+      ) : (
+        <div className="relative z-10 w-full max-w-xs text-center">
+          <div className="mx-auto flex h-48 w-48 items-center justify-center border border-dashed border-bone/15 bg-slate/40">
+            <QRMark className="aspect-square w-28 opacity-50" bg="#151820" fg="#00f0c8" />
+          </div>
+          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+            Preview appears here
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -94,6 +205,7 @@ function GenerateForm() {
 
     const payload = buildQrPayload(type, fields);
     setLoading(true);
+    startNavProgress();
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -117,6 +229,7 @@ function GenerateForm() {
       setQrCodeUrl('');
     } finally {
       setLoading(false);
+      doneNavProgress();
     }
   };
 
@@ -430,39 +543,7 @@ function GenerateForm() {
           </form>
         </section>
 
-        <section className="relative flex items-center justify-center bg-chalk px-5 py-16 sm:px-8 lg:px-12">
-          {qrCodeUrl ? (
-            <div className="relative z-10 w-full max-w-sm animate-rise text-center">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-steel">
-                Your code · {QR_TYPES.find((t) => t.id === type)?.label}
-              </p>
-              <div className="mt-6 border border-soot/10 bg-bone p-6 sm:p-8">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={qrCodeUrl}
-                  alt="Generated QR code"
-                  className="mx-auto h-56 w-56 object-contain sm:h-64 sm:w-64"
-                />
-              </div>
-              <a
-                href={qrCodeUrl}
-                download="qrify-code.png"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-flex font-mono text-[11px] uppercase tracking-[0.2em] text-cobalt transition-opacity hover:opacity-70"
-              >
-                Download PNG →
-              </a>
-            </div>
-          ) : (
-            <div className="relative z-10 w-full max-w-xs text-center opacity-40">
-              <QRMark className="mx-auto aspect-square w-40" bg="#e6e8ec" />
-              <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-steel">
-                Waiting for input
-              </p>
-            </div>
-          )}
-        </section>
+        <PreviewPanel type={type} qrCodeUrl={qrCodeUrl} loading={loading} />
       </div>
     </main>
   );
