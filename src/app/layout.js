@@ -27,6 +27,10 @@ const mono = IBM_Plex_Mono({
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
+  const authChrome =
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname?.startsWith('/auth/');
 
   useEffect(() => {
     fetch('/api/increment-page-load', { method: 'POST' });
@@ -38,9 +42,9 @@ export default function RootLayout({ children }) {
       className={`${display.variable} ${body.variable} ${mono.variable}`}
     >
       <body className="font-sans antialiased">
-        <Navbar />
+        {authChrome ? null : <Navbar />}
         {children}
-        <Footer />
+        {authChrome ? null : <Footer />}
       </body>
     </html>
   );

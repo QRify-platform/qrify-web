@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Runtime Cognito settings for the browser (Hosted UI + PKCE).
+ * Runtime Cognito settings for the browser (custom UI SRP + Google PKCE).
  * Values come from the qrify-cognito K8s secret (ESO), not build-time NEXT_PUBLIC_*.
  */
 export async function GET() {

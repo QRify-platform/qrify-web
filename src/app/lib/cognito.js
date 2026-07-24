@@ -1,7 +1,14 @@
 /**
- * Cognito Hosted UI helpers (authorization code + PKCE).
- * Config comes from GET /api/auth/config (runtime env from Secrets Manager).
+ * Cognito auth helpers — custom UI (SRP) + Google via IdP redirect (skips Hosted UI form).
+ * Config from GET /api/auth/config (runtime env from Secrets Manager).
  */
+
+import {
+  AuthenticationDetails,
+  CognitoUser,
+  CognitoUserAttribute,
+  CognitoUserPool,
+} from 'amazon-cognito-identity-js';
 
 const STORAGE = {
   verifier: 'qrify_pkce_verifier',
@@ -39,6 +46,65 @@ export async function fetchAuthConfig() {
     throw new Error('Auth config unavailable');
   }
   return res.json();
+}
+
+function userPoolFromConfig(config) {
+  if (!config.userPoolId || !config.clientId) {
+    throw new Error('Cognito user pool is not configured');
+  }
+  return new CognitoUserPool({
+    UserPoolId: config.userPoolId,
+    ClientId: config.clientId,
+  });
+}
+
+function storeSessionFromCognito(session) {
+  const access = session.getAccessToken().getJwtToken();
+  const id = session.getIdToken().getJwtToken();
+  const refresh = session.getRefreshToken().getToken();
+  sessionStorage.setItem(STORAGE.access, access);
+  sessionStorage.setItem(STORAGE.id, id);
+  if (refresh) sessionStorage.setItem(STORAGE.refresh, refresh);
+
+  try {
+    const payload = session.getIdToken().decodePayload();
+    sessionStorage.setItem(
+      STORAGE.profile,
+      JSON.stringify({
+        sub: payload.sub,
+        email: payload.email,
+        name: payload.name || payload.email,
+      })
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function storeSessionFromOauthTokens(tokens) {
+  sessionStorage.setItem(STORAGE.access, tokens.access_token);
+  sessionStorage.setItem(STORAGE.id, tokens.id_token);
+  if (tokens.refresh_token) {
+    sessionStorage.setItem(STORAGE.refresh, tokens.refresh_token);
+  }
+
+  try {
+    const part = tokens.id_token.split('.')[1];
+    const padded =
+      part.replace(/-/g, '+').replace(/_/g, '/') +
+      '=='.slice((part.length % 4) || 4);
+    const payload = JSON.parse(atob(padded));
+    sessionStorage.setItem(
+      STORAGE.profile,
+      JSON.stringify({
+        sub: payload.sub,
+        email: payload.email,
+        name: payload.name || payload.email,
+      })
+    );
+  } catch {
+    /* ignore */
+  }
 }
 
 export function getAccessToken() {
@@ -79,7 +145,90 @@ function redirectUri() {
   return `${window.location.origin}/auth/callback`;
 }
 
-export async function beginLogin() {
+/** Open in-app login (not Cognito Hosted UI). */
+export function beginLogin(returnTo) {
+  const q =
+    returnTo && returnTo !== '/login'
+      ? `?next=${encodeURIComponent(returnTo)}`
+      : '';
+  window.location.href = `/login${q}`;
+}
+
+export async function signInWithPassword(email, password) {
+  const config = await fetchAuthConfig();
+  const pool = userPoolFromConfig(config);
+  const user = new CognitoUser({ Username: email.trim(), Pool: pool });
+  const details = new AuthenticationDetails({
+    Username: email.trim(),
+    Password: password,
+  });
+
+  return new Promise((resolve, reject) => {
+    user.authenticateUser(details, {
+      onSuccess: (session) => {
+        storeSessionFromCognito(session);
+        resolve(session);
+      },
+      onFailure: (err) => reject(err),
+      newPasswordRequired: () => {
+        reject(new Error('Password reset required. Check your email or contact support.'));
+      },
+    });
+  });
+}
+
+export async function signUpWithPassword(email, password) {
+  const config = await fetchAuthConfig();
+  const pool = userPoolFromConfig(config);
+  const attrs = [
+    new CognitoUserAttribute({ Name: 'email', Value: email.trim() }),
+  ];
+
+  return new Promise((resolve, reject) => {
+    pool.signUp(email.trim(), password, attrs, null, (err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(result);
+    });
+  });
+}
+
+export async function confirmSignUp(email, code) {
+  const config = await fetchAuthConfig();
+  const pool = userPoolFromConfig(config);
+  const user = new CognitoUser({ Username: email.trim(), Pool: pool });
+
+  return new Promise((resolve, reject) => {
+    user.confirmRegistration(code.trim(), true, (err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(result);
+    });
+  });
+}
+
+export async function resendConfirmationCode(email) {
+  const config = await fetchAuthConfig();
+  const pool = userPoolFromConfig(config);
+  const user = new CognitoUser({ Username: email.trim(), Pool: pool });
+
+  return new Promise((resolve, reject) => {
+    user.resendConfirmationCode((err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(result);
+    });
+  });
+}
+
+/** Google: authorize with identity_provider so Cognito skips its own login form. */
+export async function beginGoogleLogin() {
   const config = await fetchAuthConfig();
   const verifier = randomString(32);
   const state = randomString(16);
@@ -96,14 +245,19 @@ export async function beginLogin() {
     state,
     code_challenge: challenge,
     code_challenge_method: 'S256',
+    identity_provider: 'Google',
   });
 
   window.location.href = `https://${config.domain}/oauth2/authorize?${params}`;
 }
 
 export async function beginLogout() {
-  const config = await fetchAuthConfig();
+  const config = await fetchAuthConfig().catch(() => null);
   clearSession();
+  if (!config?.domain || !config?.clientId) {
+    window.location.href = '/';
+    return;
+  }
   const params = new URLSearchParams({
     client_id: config.clientId,
     logout_uri: `${window.location.origin}/`,
@@ -142,33 +296,8 @@ export async function completeLogin(code, state) {
   }
 
   const tokens = await res.json();
-  sessionStorage.setItem(STORAGE.access, tokens.access_token);
-  sessionStorage.setItem(STORAGE.id, tokens.id_token);
-  if (tokens.refresh_token) {
-    sessionStorage.setItem(STORAGE.refresh, tokens.refresh_token);
-  }
-
+  storeSessionFromOauthTokens(tokens);
   sessionStorage.removeItem(STORAGE.verifier);
   sessionStorage.removeItem(STORAGE.state);
-
-  // Lightweight profile from id token payload (no verify in browser — API verifies).
-  try {
-    const part = tokens.id_token.split('.')[1];
-    const padded =
-      part.replace(/-/g, '+').replace(/_/g, '/') +
-      '=='.slice((part.length % 4) || 4);
-    const payload = JSON.parse(atob(padded));
-    sessionStorage.setItem(
-      STORAGE.profile,
-      JSON.stringify({
-        sub: payload.sub,
-        email: payload.email,
-        name: payload.name || payload.email,
-      })
-    );
-  } catch {
-    /* ignore */
-  }
-
   return tokens;
 }
