@@ -47,20 +47,16 @@ function PreviewPanel({ type, qrCodeUrl, loading }) {
   return (
     <section className="relative flex min-h-[28rem] items-center justify-center overflow-hidden bg-soot px-5 py-16 text-bone sm:px-8 lg:min-h-0 lg:px-12">
       <div
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0 opacity-[0.28]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,240,200,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,200,0.06) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
+            'linear-gradient(rgba(0,240,200,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,200,0.05) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
         }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -right-24 top-1/4 h-72 w-72 rounded-full bg-acid/15 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-acid/10 blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-acid/[0.07] blur-3xl"
         aria-hidden
       />
 
@@ -69,54 +65,38 @@ function PreviewPanel({ type, qrCodeUrl, loading }) {
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid">
             Rendering · {typeLabel}
           </p>
-          <div className="mt-8 flex h-64 w-64 items-center justify-center border border-acid/25 bg-slate/80 sm:h-72 sm:w-72">
-            <div className="relative h-16 w-16">
-              <span className="absolute inset-0 border border-acid/30" />
-              <span className="absolute inset-2 animate-pulse bg-acid/20" />
-              <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-acid" />
-              <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-acid" />
-              <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-acid" />
-              <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-acid" />
-            </div>
+          <div className="mt-8 flex aspect-square w-[min(100%,18rem)] items-center justify-center bg-bone/5 sm:w-72">
+            <div className="h-12 w-12 animate-pulse border border-acid/40 bg-acid/10" />
           </div>
           <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/45">
             Building your code
           </p>
         </div>
       ) : qrCodeUrl ? (
-        <div className="relative z-10 w-full max-w-md animate-rise text-center">
-          <div className="flex items-center justify-center gap-3">
-            <span className="h-px w-8 bg-acid/50" aria-hidden />
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid">
-              Ready · {typeLabel}
-            </p>
-            <span className="h-px w-8 bg-acid/50" aria-hidden />
-          </div>
+        <div className="relative z-10 flex w-full max-w-md flex-col items-center animate-rise">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-acid/80">
+            {typeLabel}
+          </p>
 
-          <div className="relative mx-auto mt-8 w-fit">
-            <span
-              className="absolute -left-2 -top-2 h-5 w-5 border-l border-t border-acid"
-              aria-hidden
-            />
-            <span
-              className="absolute -right-2 -top-2 h-5 w-5 border-r border-t border-acid"
-              aria-hidden
-            />
-            <span
-              className="absolute -bottom-2 -left-2 h-5 w-5 border-b border-l border-acid"
-              aria-hidden
-            />
-            <span
-              className="absolute -bottom-2 -right-2 h-5 w-5 border-b border-r border-acid"
-              aria-hidden
-            />
-            <div className="bg-bone p-5 shadow-[0_0_0_1px_rgba(0,240,200,0.2),0_24px_60px_rgba(0,0,0,0.45)] sm:p-7">
+          <div className="mt-6 w-full max-w-[20rem] bg-bone p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)] sm:max-w-[22rem] sm:p-5">
+            <div className="bg-white p-3 sm:p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrCodeUrl}
                 alt="Generated QR code"
-                className="mx-auto h-56 w-56 object-contain sm:h-72 sm:w-72"
+                width={512}
+                height={512}
+                className="aspect-square h-auto w-full"
+                style={{ imageRendering: 'pixelated' }}
               />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 px-0.5">
+              <span className="font-display text-sm font-bold tracking-tight text-soot">
+                QRify
+              </span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-steel">
+                PNG · ready
+              </span>
             </div>
           </div>
 
@@ -125,7 +105,7 @@ function PreviewPanel({ type, qrCodeUrl, loading }) {
             download="qrify-code.png"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-10 inline-flex items-center gap-3 border border-acid bg-acid px-7 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-soot transition-colors hover:bg-transparent hover:text-acid"
+            className="mt-8 inline-flex items-center gap-3 border border-acid bg-acid px-7 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-soot transition-colors hover:bg-transparent hover:text-acid"
           >
             Download PNG
             <span className="h-1.5 w-1.5 bg-soot" aria-hidden />
@@ -136,8 +116,8 @@ function PreviewPanel({ type, qrCodeUrl, loading }) {
         </div>
       ) : (
         <div className="relative z-10 w-full max-w-xs text-center">
-          <div className="mx-auto flex h-48 w-48 items-center justify-center border border-dashed border-bone/15 bg-slate/40">
-            <QRMark className="aspect-square w-28 opacity-50" bg="#151820" fg="#00f0c8" />
+          <div className="mx-auto flex aspect-square w-48 items-center justify-center border border-dashed border-bone/15 bg-slate/50">
+            <QRMark className="aspect-square w-28 opacity-45" bg="#151820" fg="#00f0c8" />
           </div>
           <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
             Preview appears here
