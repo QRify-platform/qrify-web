@@ -252,9 +252,8 @@ function GenerateForm() {
   };
 
   return (
-    <main className="min-h-[calc(100svh-4.25rem)] bg-bone">
-      <div className="mx-auto grid min-h-[calc(100svh-4.25rem)] max-w-[1400px] lg:grid-cols-2">
-        <section className="flex flex-col justify-center border-b border-soot/10 px-5 py-12 sm:px-8 lg:border-b-0 lg:border-r lg:px-12 lg:py-16">
+    <main className="min-h-[calc(100svh-4.25rem)] bg-bone lg:grid lg:min-h-[calc(100svh-4.25rem)] lg:grid-cols-2">
+      <section className="flex flex-col justify-center border-b border-soot/10 px-5 py-12 sm:px-8 lg:border-b-0 lg:border-r lg:px-12 lg:py-16 xl:pl-[max(3rem,calc((100vw-1400px)/2+3rem))]">
           <h1 className="font-display text-4xl font-bold tracking-[-0.03em] text-soot sm:text-5xl">
             What should this
             <br />
@@ -570,7 +569,6 @@ function GenerateForm() {
           onSave={handleSave}
           authed={authed}
         />
-      </div>
     </main>
   );
 }
