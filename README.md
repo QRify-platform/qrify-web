@@ -6,7 +6,6 @@ This frontend is built with **Next.js** and styled to reflect a polished SaaS ex
 
 <img width="1512" height="945" alt="Screenshot 2026-07-23 at 8 56 53 PM" src="https://github.com/user-attachments/assets/ebd8c4e4-dbeb-4c22-a4f8-e629c72dc5b8" />
 ---
-
 ## 🚀 Features
 
 - 🧠 Clean and intuitive interface  
