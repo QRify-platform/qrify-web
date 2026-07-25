@@ -29,8 +29,6 @@ jobs:
           aws-role-to-assume: ${{ vars.AWS_ECR_ROLE_TO_ASSUME }}
           aws-region: us-east-2
           ecr-registry: ${{ vars.AWS_ECR_REGISTRY }}
-          build-args: "--build-arg NEXT_PUBLIC_API_BASE_URL=/backend"
-
       - name: Point cluster-state dev at new tag
         uses: QRify-platform/github-actions/update-app-tag@main
         with:

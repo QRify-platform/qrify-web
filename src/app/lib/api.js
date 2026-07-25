@@ -1,13 +1,40 @@
 /**
  * Thin API client for qrify-web-api.
- * Base URL comes from NEXT_PUBLIC_API_BASE_URL (ingress /backend in cluster).
+ * Base URL from GET /api/config (runtime API_BASE_URL per env).
  */
 
 import axios from 'axios';
 import { getApiToken } from './cognito';
 
-export function apiBase() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+let cachedApiBase;
+
+export async function apiBase() {
+  if (cachedApiBase) return cachedApiBase;
+
+  if (typeof window === 'undefined') {
+    cachedApiBase =
+      process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'http://localhost:8000';
+    return cachedApiBase;
+  }
+
+  try {
+    const res = await fetch('/api/config');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.apiBaseUrl) {
+        cachedApiBase = data.apiBaseUrl.replace(/\/$/, '');
+        return cachedApiBase;
+      }
+    }
+  } catch {
+    // fall through
+  }
+
+  cachedApiBase =
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  return cachedApiBase;
 }
 
 function authHeaders() {
@@ -17,7 +44,7 @@ function authHeaders() {
 
 /** Preview only — does not persist. */
 export async function generateQrPreview(payload) {
-  const { data } = await axios.post(`${apiBase()}/generate-qr/`, {
+  const { data } = await axios.post(`${await apiBase()}/generate-qr/`, {
     url: payload,
   });
   return data;
@@ -26,7 +53,7 @@ export async function generateQrPreview(payload) {
 /** Explicit save to the signed-in user's account. */
 export async function saveQrCode(payload) {
   const { data } = await axios.post(
-    `${apiBase()}/qr-codes`,
+    `${await apiBase()}/qr-codes`,
     { url: payload },
     { headers: authHeaders() }
   );
@@ -34,14 +61,14 @@ export async function saveQrCode(payload) {
 }
 
 export async function listMyQrCodes() {
-  const { data } = await axios.get(`${apiBase()}/qr-codes`, {
+  const { data } = await axios.get(`${await apiBase()}/qr-codes`, {
     headers: authHeaders(),
   });
   return data;
 }
 
 export async function deleteQrCode(id) {
-  await axios.delete(`${apiBase()}/qr-codes/${id}`, {
+  await axios.delete(`${await apiBase()}/qr-codes/${id}`, {
     headers: authHeaders(),
   });
 }
