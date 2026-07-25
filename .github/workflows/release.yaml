@@ -4,11 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      promote_prod:
-        description: Promote the same image tag to prod (production environment approval)
-        type: boolean
-        default: true
 
 permissions:
   id-token: write
@@ -16,7 +11,6 @@ permissions:
 
 # Push to main → deploy dev, then wait for GitHub Environment "production"
 # required-reviewer approval before promoting the same image tag to prod.
-# Rebuild Platform dispatches with promote_prod=false so seeding only waits on dev.
 # Scaffold / org setup creates that environment with reviewers automatically.
 
 jobs:
@@ -47,8 +41,6 @@ jobs:
 
   promote-prod:
     needs: deploy-dev
-    # Push always promotes (with env gate). Dispatch honors promote_prod input.
-    if: ${{ github.event_name == 'push' || inputs.promote_prod == true || inputs.promote_prod == 'true' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
