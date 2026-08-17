@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { MyCodesView } from './MyCodesView';
+import { SavedCodes } from './_components/SavedCodes';
 
 export const metadata: Metadata = {
   title: 'My codes',
 };
 
 export default function MyCodesPage() {
-  return <MyCodesView />;
+  return <SavedCodes />;
 }

@@ -1,5 +1,12 @@
 import Link from 'next/link';
-import { ROUTES } from '@/lib/routes';
+import { ROUTES } from '@/constants/routes';
+
+const FOOTER_LINKS = [
+  { href: ROUTES.home, label: 'Home' },
+  { href: '/#how', label: 'How it works' },
+  { href: '/#uses', label: 'Use cases' },
+  { href: ROUTES.generate, label: 'Generator' },
+] as const;
 
 export function Footer() {
   return (
@@ -18,21 +25,15 @@ export function Footer() {
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-steel">
             Navigate
           </p>
-          <Link href={ROUTES.home} className="text-sm text-soot hover:text-cobalt">
-            Home
-          </Link>
-          <Link href="/#how" className="text-sm text-soot hover:text-cobalt">
-            How it works
-          </Link>
-          <Link href="/#uses" className="text-sm text-soot hover:text-cobalt">
-            Use cases
-          </Link>
-          <Link
-            href={ROUTES.generate}
-            className="text-sm text-soot hover:text-cobalt"
-          >
-            Generator
-          </Link>
+          {FOOTER_LINKS.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className="text-sm text-soot hover:text-cobalt"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         <div className="flex flex-col justify-between gap-6 lg:col-span-3">

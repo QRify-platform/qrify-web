@@ -28,6 +28,60 @@ This frontend is built with **Next.js** and styled to reflect a polished SaaS ex
 
 ---
 
+## 📁 Project structure
+
+A component lives next to the route that uses it, and only moves to
+`components/` once a second route needs it.
+
+```
+src/
+  app/                    Routes, plus the components each route owns
+    (home)/               Route group — organizes files without touching the URL
+      page.tsx
+      _components/        Hero, TypesBento, HowItWorks, UseCases, HomeCta
+    generate/
+      page.tsx
+      _components/        Generator, GeneratorForm, QrTypePicker
+        fields/           One file per QR type (LinkFields, WifiFields…)
+        preview/          Preview states (empty, loading, result)
+    my-codes/  login/  signup/  auth/callback/
+      page.tsx + _components/
+    api/                  Route handlers (config, health, metrics)
+
+  components/             Only what more than one route uses
+    ui/                   Design-system primitives (Button, TextField, Alert…)
+    layout/               Navbar, Footer, and the chrome around every page
+    auth/                 Shared by login and signup (AuthShell, GoogleButton…)
+    icons/
+
+  hooks/                  All client state and side effects (use* files)
+  lib/                    Framework-free logic
+    api/                  HTTP calls to the FastAPI backend
+    auth/                 Cognito password auth, Google OAuth, session storage
+    qr/                   Payload building and field validation
+    utils/                Small standalone helpers
+  types/                  Shared domain types — no runtime code
+  constants/              Static data (routes, QR catalog, nav links) — no logic
+```
+
+### Conventions
+
+- **Colocate first.** Page-specific UI goes in that route's `_components/`.
+  The `_` prefix tells Next.js the folder is not a route. Promote a component
+  to `components/` only when a second route imports it.
+- **One component per file.** If a file exports two components, split it.
+- **Components render, hooks decide.** Anything with `useState` or `useEffect`
+  belongs in `hooks/`, so components stay readable top to bottom.
+- **Types shared across files live in `types/`.** A component's own `Props`
+  type stays in that component's file.
+- **`lib/api`, `lib/auth`, and `lib/qr` are modules with a public API.**
+  Import them from the folder (`@/lib/auth`), not from a file inside it.
+  `lib/utils` holds unrelated helpers, so import those by exact path.
+- **Dependencies flow one way:** `app` → `components` → `hooks` → `lib` →
+  `constants`/`types`. Nothing lower ever imports from something higher.
+
+---
+
 ## 🔄 CI/CD (GitHub Actions)
 
 Every push to `main` triggers the following actions:

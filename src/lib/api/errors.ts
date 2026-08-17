@@ -1,26 +1,34 @@
 import axios from 'axios';
+import type { QrAction } from '@/types';
 
 export function getHttpStatus(error: unknown): number | undefined {
-  if (axios.isAxiosError(error)) {
-    return error.response?.status;
-  }
+  if (axios.isAxiosError(error)) return error.response?.status;
   return undefined;
 }
 
-export type QrAction = 'generate' | 'save' | 'list' | 'delete';
+export function isUnauthorized(error: unknown): boolean {
+  return getHttpStatus(error) === 401;
+}
 
+const RATE_LIMITED: Record<QrAction, string> = {
+  generate: 'Too many generates — wait a moment and try again.',
+  save: 'Too many saves — wait a moment and try again.',
+  list: 'Too many requests — wait a moment and try again.',
+  delete: 'Too many requests — wait a moment and try again.',
+};
+
+const FAILED: Record<QrAction, string> = {
+  generate: 'Could not generate that code. Check your inputs and try again.',
+  save: 'Could not save that code. Try again.',
+  list: 'Could not load your codes. Try signing in again.',
+  delete: 'Could not delete that code. Try again.',
+};
+
+/** Turns an API failure into a message a user can act on. */
 export function messageForQrError(error: unknown, action: QrAction): string {
   const status = getHttpStatus(error);
 
-  if (status === 429) {
-    if (action === 'generate') {
-      return 'Too many generates — wait a moment and try again.';
-    }
-    if (action === 'save') {
-      return 'Too many saves — wait a moment and try again.';
-    }
-    return 'Too many requests — wait a moment and try again.';
-  }
+  if (status === 429) return RATE_LIMITED[action];
 
   if (status === 401) {
     return action === 'save'
@@ -32,14 +40,5 @@ export function messageForQrError(error: unknown, action: QrAction): string {
     return 'You can only delete your own codes.';
   }
 
-  if (action === 'generate') {
-    return 'Could not generate that code. Check your inputs and try again.';
-  }
-  if (action === 'save') {
-    return 'Could not save that code. Try again.';
-  }
-  if (action === 'list') {
-    return 'Could not load your codes. Try signing in again.';
-  }
-  return 'Could not delete that code. Try again.';
+  return FAILED[action];
 }

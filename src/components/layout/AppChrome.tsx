@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { isAuthChromePath } from '@/lib/routes';
+import { useEffect, type ReactNode } from 'react';
+import { isAuthChromePath } from '@/lib/utils/paths';
 import { Footer } from './Footer';
 import { Navbar } from './Navbar';
 
@@ -10,9 +10,10 @@ type AppChromeProps = {
   children: ReactNode;
 };
 
+/** Wraps every page in the navbar and footer, except the auth screens. */
 export function AppChrome({ children }: AppChromeProps) {
   const pathname = usePathname();
-  const authChrome = isAuthChromePath(pathname);
+  const bare = isAuthChromePath(pathname);
 
   useEffect(() => {
     void fetch('/api/increment-page-load', { method: 'POST' });
@@ -20,9 +21,9 @@ export function AppChrome({ children }: AppChromeProps) {
 
   return (
     <>
-      {authChrome ? null : <Navbar />}
+      {!bare && <Navbar />}
       {children}
-      {authChrome ? null : <Footer />}
+      {!bare && <Footer />}
     </>
   );
 }

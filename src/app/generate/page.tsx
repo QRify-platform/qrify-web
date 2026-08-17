@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { Generator } from './_components/Generator';
 import { PageLoader } from '@/components/ui/PageLoader';
-import { GenerateWorkspace } from './GenerateWorkspace';
 
 export const metadata: Metadata = {
   title: 'Generate',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function GeneratePage() {
   return (
     <Suspense fallback={<PageLoader label="Loading generator…" />}>
-      <GenerateWorkspace />
+      <Generator />
     </Suspense>
   );
 }

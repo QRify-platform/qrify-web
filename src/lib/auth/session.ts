@@ -1,8 +1,8 @@
 import type { CognitoUserSession } from 'amazon-cognito-identity-js';
+import type { AuthProfile, OauthTokens } from '@/types';
 import { decodeJwtPayload } from './pkce';
-import type { AuthProfile, OauthTokens } from './types';
 
-export const AUTH_STORAGE = {
+export const AUTH_STORAGE_KEYS = {
   verifier: 'qrify_pkce_verifier',
   state: 'qrify_oauth_state',
   access: 'qrify_access_token',
@@ -11,59 +11,60 @@ export const AUTH_STORAGE = {
   profile: 'qrify_profile',
 } as const;
 
-function storeProfileFromClaims(claims: Record<string, unknown>): void {
+function storeProfile(claims: Record<string, unknown>): void {
+  const email = typeof claims.email === 'string' ? claims.email : undefined;
   const profile: AuthProfile = {
     sub: typeof claims.sub === 'string' ? claims.sub : undefined,
-    email: typeof claims.email === 'string' ? claims.email : undefined,
-    name:
-      typeof claims.name === 'string'
-        ? claims.name
-        : typeof claims.email === 'string'
-          ? claims.email
-          : undefined,
+    email,
+    name: typeof claims.name === 'string' ? claims.name : email,
   };
-  sessionStorage.setItem(AUTH_STORAGE.profile, JSON.stringify(profile));
+  sessionStorage.setItem(AUTH_STORAGE_KEYS.profile, JSON.stringify(profile));
 }
 
-export function storeSessionFromCognito(session: CognitoUserSession): void {
-  const access = session.getAccessToken().getJwtToken();
-  const id = session.getIdToken().getJwtToken();
+export function storeCognitoSession(session: CognitoUserSession): void {
+  sessionStorage.setItem(
+    AUTH_STORAGE_KEYS.access,
+    session.getAccessToken().getJwtToken()
+  );
+  sessionStorage.setItem(
+    AUTH_STORAGE_KEYS.id,
+    session.getIdToken().getJwtToken()
+  );
+
   const refresh = session.getRefreshToken().getToken();
-  sessionStorage.setItem(AUTH_STORAGE.access, access);
-  sessionStorage.setItem(AUTH_STORAGE.id, id);
-  if (refresh) sessionStorage.setItem(AUTH_STORAGE.refresh, refresh);
+  if (refresh) sessionStorage.setItem(AUTH_STORAGE_KEYS.refresh, refresh);
 
   try {
-    storeProfileFromClaims(session.getIdToken().decodePayload());
+    storeProfile(session.getIdToken().decodePayload());
   } catch {
-    /* ignore */
+    // A missing profile only costs us the email in the navbar.
   }
 }
 
-export function storeSessionFromOauthTokens(tokens: OauthTokens): void {
-  sessionStorage.setItem(AUTH_STORAGE.access, tokens.access_token);
-  sessionStorage.setItem(AUTH_STORAGE.id, tokens.id_token);
+export function storeOauthTokens(tokens: OauthTokens): void {
+  sessionStorage.setItem(AUTH_STORAGE_KEYS.access, tokens.access_token);
+  sessionStorage.setItem(AUTH_STORAGE_KEYS.id, tokens.id_token);
   if (tokens.refresh_token) {
-    sessionStorage.setItem(AUTH_STORAGE.refresh, tokens.refresh_token);
+    sessionStorage.setItem(AUTH_STORAGE_KEYS.refresh, tokens.refresh_token);
   }
 
   const claims = decodeJwtPayload(tokens.id_token);
-  if (claims) storeProfileFromClaims(claims);
+  if (claims) storeProfile(claims);
 }
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem(AUTH_STORAGE.access);
+  return sessionStorage.getItem(AUTH_STORAGE_KEYS.access);
 }
 
 export function getIdToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem(AUTH_STORAGE.id);
+  return sessionStorage.getItem(AUTH_STORAGE_KEYS.id);
 }
 
 export function getProfile(): AuthProfile | null {
   if (typeof window === 'undefined') return null;
-  const raw = sessionStorage.getItem(AUTH_STORAGE.profile);
+  const raw = sessionStorage.getItem(AUTH_STORAGE_KEYS.profile);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as AuthProfile;
@@ -76,11 +77,13 @@ export function isLoggedIn(): boolean {
   return Boolean(getAccessToken() || getIdToken());
 }
 
-/** Prefer access token for API; fall back to id token (API accepts both). */
+/** The API accepts either token; prefer the access token. */
 export function getApiToken(): string | null {
   return getAccessToken() || getIdToken();
 }
 
 export function clearSession(): void {
-  Object.values(AUTH_STORAGE).forEach((key) => sessionStorage.removeItem(key));
+  Object.values(AUTH_STORAGE_KEYS).forEach((key) =>
+    sessionStorage.removeItem(key)
+  );
 }
